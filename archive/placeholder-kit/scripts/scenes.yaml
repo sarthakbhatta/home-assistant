@@ -1,0 +1,70 @@
+# ============================================================================
+# NIGHT CONSOLE — the three scene scripts on the Home view
+# ----------------------------------------------------------------------------
+# Install per script: Settings → Automations & scenes → Scripts →
+# + Add script → Create new → ⋮ → "Edit in YAML" → paste ONE block (everything
+# under its key, keeping the fields) → Save. Or append to <config>/scripts.yaml
+# and reload Scripts (Developer Tools → YAML).
+# ============================================================================
+
+movie_night:
+  alias: "Movie night"
+  icon: mdi:movie-open
+  sequence:
+    - action: light.turn_off
+      target:
+        entity_id:
+          - light.kitchen_main
+          - light.hallway
+    - action: light.turn_on
+      target:
+        entity_id: light.living_room_ceiling
+      data:
+        brightness_pct: 15
+        kelvin: 2200
+        transition: 3
+    - action: light.turn_on
+      target:
+        entity_id: light.living_room_lamp
+      data:
+        brightness_pct: 25
+        kelvin: 2200
+  mode: single
+
+wind_down:
+  alias: "Wind down"
+  icon: mdi:weather-night
+  sequence:
+    - action: light.turn_on
+      target:
+        entity_id:
+          - light.living_room_lamp
+          - light.bedroom_bedside
+      data:
+        brightness_pct: 30
+        kelvin: 2200
+        transition: 10
+    - action: light.turn_off
+      target:
+        entity_id:
+          - light.living_room_ceiling
+          - light.kitchen_main
+          - light.office_desk
+      data:
+        transition: 10
+  mode: single
+
+everything_off:
+  alias: "Everything off"
+  icon: mdi:power
+  sequence:
+    - action: light.turn_off
+      target:
+        entity_id: all
+      data:
+        transition: 5
+    - action: media_player.turn_off
+      target:
+        entity_id: all
+      continue_on_error: true
+  mode: single

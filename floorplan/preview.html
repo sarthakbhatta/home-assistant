@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>fp preview</title>
+<style>body{margin:0;background:#0B0D12}#w svg{width:100vw;height:auto;display:block}</style>
+<div id="w"></div>
+<script>
+fetch('office.svg?v='+Date.now()).then(r=>r.text()).then(t=>{
+document.getElementById('w').innerHTML=t;
+if(location.hash=='#on'){
+var L=['light.office_downlight_1','light.office_downlight_2','light.smart_light_strip1','light.office_bathroom_downlight','light.st1','light.st2','light.st3'];
+L.forEach(function(i){document.getElementById(i).classList.add('light-on')});
+document.getElementById('climate.panasonic_ac_panasonic_ac').classList.add('ac-on');
+document.getElementById('switch.office_main_desk').classList.add('plug-on');
+document.getElementById('switch.borewell_motor').classList.add('pump-on');
+document.getElementById('binary_sensor.terrace_door_sensor_door').classList.add('door-open');
+document.getElementById('binary_sensor.motion_sensor_motion').classList.add('motion-on');
+document.getElementById('valve.tuya_automated_watering_valve_1').classList.add('valve-open');
+document.getElementById('valve.tuya_automated_watering_valve_2').classList.add('valve-open');
+document.getElementById('office-temp').textContent='29.1°';
+}});
+</script>

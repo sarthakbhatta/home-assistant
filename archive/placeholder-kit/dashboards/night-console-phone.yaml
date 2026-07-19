@@ -1,0 +1,287 @@
+# ============================================================================
+# NIGHT CONSOLE — phone-first dashboard (works on desktop too)
+# ----------------------------------------------------------------------------
+# Paste into: Settings → Dashboards → + Add dashboard → "New dashboard from
+# scratch" → open it → ✏️ edit → ⋮ menu → "Raw configuration editor" → replace
+# everything with this file's content → Save.
+#
+# Requires (HACS → Frontend):  Bubble Card · card-mod · auto-entities
+# Theme: "Night Console" (see themes/night-console.yaml)
+# Entities: placeholders — see ENTITIES.md for the rename map.
+# ============================================================================
+title: Night Console
+views:
+  # ==========================================================================
+  # HOME — the one-thumb view
+  # ==========================================================================
+  - title: Home
+    path: home
+    icon: mdi:home-variant
+    badges: []
+    cards:
+      # ---- status headline: "All quiet" or what needs attention ------------
+      - type: markdown
+        content: >-
+          # {% set l = states.light | selectattr('state','eq','on') | list |
+          count %} {% set doors = states.binary_sensor |
+          selectattr('attributes.device_class','defined') |
+          selectattr('attributes.device_class','in',['door','window']) |
+          selectattr('state','eq','on') | list | count %} {% if l == 0 and
+          doors == 0 %}All quiet{% elif doors > 0 %}{{ doors }} open{% else
+          %}{{ l }} light{{ 's' if l != 1 }} on{% endif %}
+
+          <font color="#8B8F99">{{ now().strftime('%H:%M') }} ·
+          {{ states('sensor.living_room_temperature') }}° inside ·
+          {{ expand(states.person) | selectattr('state','eq','home') | list | count }} home</font>
+        card_mod:
+          style: |
+            ha-card { background: none; border: none; box-shadow: none; }
+            h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 2px; }
+
+      # ---- attention chips: only exist when something is wrong --------------
+      - type: conditional
+        conditions:
+          - condition: state
+            entity: binary_sensor.front_door
+            state: "on"
+        card:
+          type: custom:bubble-card
+          card_type: button
+          button_type: state
+          entity: binary_sensor.front_door
+          name: Front door is open
+          icon: mdi:door-open
+          styles: |
+            .bubble-button-background { background: rgba(229,72,77,0.25) !important; }
+
+      # ---- hero: living room light with glow --------------------------------
+      - type: custom:bubble-card
+        card_type: button
+        button_type: slider
+        entity: light.living_room_ceiling
+        name: Living Room
+        icon: mdi:sofa
+        show_state: true
+        show_attribute: true
+        attribute: brightness
+        tap_action:
+          action: toggle
+        styles: |
+          ha-card {
+            box-shadow: ${state === 'on' ? '0 0 34px rgba(232,163,61,0.22)' : 'none'};
+            border-color: ${state === 'on' ? 'rgba(232,163,61,0.35)' : ''};
+          }
+
+      # ---- duo: climate + media ---------------------------------------------
+      - type: horizontal-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: climate
+            entity: climate.living_room_ac
+            name: Climate
+          - type: custom:bubble-card
+            card_type: media-player
+            entity: media_player.speakers
+            name: Music
+            hide:
+              play_pause_button: false
+              volume_button: false
+              next_button: true
+              previous_button: true
+
+      # ---- scenes ------------------------------------------------------------
+      - type: custom:bubble-card
+        card_type: separator
+        name: Scenes
+        icon: mdi:palette
+
+      - type: horizontal-stack
+        cards:
+          - type: custom:bubble-card
+            card_type: button
+            button_type: switch
+            entity: script.movie_night
+            name: Movie
+            icon: mdi:movie-open
+          - type: custom:bubble-card
+            card_type: button
+            button_type: switch
+            entity: script.wind_down
+            name: Wind down
+            icon: mdi:weather-night
+          - type: custom:bubble-card
+            card_type: button
+            button_type: switch
+            entity: script.everything_off
+            name: All off
+            icon: mdi:power
+
+      # ============= POP-UPS (standalone v3.2+ format, hidden until tapped) ===
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: "#living"
+        name: Living Room
+        icon: mdi:sofa
+        entity: light.living_room_ceiling
+        cards:
+          - type: custom:bubble-card
+            card_type: button
+            button_type: slider
+            entity: light.living_room_ceiling
+            name: Ceiling
+          - type: custom:bubble-card
+            card_type: button
+            button_type: slider
+            entity: light.living_room_lamp
+            name: Floor lamp
+          - type: custom:bubble-card
+            card_type: climate
+            entity: climate.living_room_ac
+          - type: custom:bubble-card
+            card_type: media-player
+            entity: media_player.living_room_tv
+            name: TV
+
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: "#bedroom"
+        name: Bedroom
+        icon: mdi:bed
+        entity: light.bedroom_ceiling
+        cards:
+          - type: custom:bubble-card
+            card_type: button
+            button_type: slider
+            entity: light.bedroom_ceiling
+            name: Ceiling
+          - type: custom:bubble-card
+            card_type: button
+            button_type: slider
+            entity: light.bedroom_bedside
+            name: Bedside
+          - type: custom:bubble-card
+            card_type: climate
+            entity: climate.bedroom_ac
+
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: "#office"
+        name: Office
+        icon: mdi:desk
+        entity: light.office_desk
+        cards:
+          - type: custom:bubble-card
+            card_type: button
+            button_type: slider
+            entity: light.office_desk
+            name: Desk light
+          - type: tile
+            entity: sensor.office_temperature
+            name: Temperature
+
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: "#kitchen"
+        name: Kitchen
+        icon: mdi:silverware-fork-knife
+        entity: light.kitchen_main
+        cards:
+          - type: custom:bubble-card
+            card_type: button
+            button_type: slider
+            entity: light.kitchen_main
+            name: Main light
+
+      # ---- room chip bar (opens pop-ups) — MUST stay the last card in view ---
+      - type: custom:bubble-card
+        card_type: horizontal-buttons-stack
+        auto_order: false
+        width_desktop: 600px
+        1_link: "#living"
+        1_name: Living
+        1_icon: mdi:sofa
+        1_entity: light.living_room_ceiling
+        2_link: "#bedroom"
+        2_name: Bedroom
+        2_icon: mdi:bed
+        2_entity: light.bedroom_ceiling
+        3_link: "#office"
+        3_name: Office
+        3_icon: mdi:desk
+        3_entity: light.office_desk
+        4_link: "#kitchen"
+        4_name: Kitchen
+        4_icon: mdi:silverware-fork-knife
+        4_entity: light.kitchen_main
+
+  # ==========================================================================
+  # CLIMATE — thermostats + history
+  # ==========================================================================
+  - title: Climate
+    path: climate
+    icon: mdi:thermometer
+    cards:
+      - type: thermostat
+        entity: climate.living_room_ac
+      - type: thermostat
+        entity: climate.bedroom_ac
+      - type: history-graph
+        title: Temperature · 24h
+        hours_to_show: 24
+        entities:
+          - entity: sensor.living_room_temperature
+            name: Living
+          - entity: sensor.bedroom_temperature
+            name: Bedroom
+          - entity: sensor.office_temperature
+            name: Office
+      - type: history-graph
+        title: Bathroom humidity
+        hours_to_show: 12
+        entities:
+          - entity: sensor.bathroom_humidity
+            name: Humidity
+
+  # ==========================================================================
+  # ADMIN — exception-first maintenance (batteries, updates, dead devices)
+  # ==========================================================================
+  - title: Admin
+    path: admin
+    icon: mdi:wrench
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Batteries under 20%
+        filter:
+          include:
+            - attributes:
+                device_class: battery
+              state: "< 20"
+          exclude:
+            - state: unavailable
+            - state: unknown
+        sort:
+          method: state
+          numeric: true
+        show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Updates available
+        filter:
+          include:
+            - domain: update
+              state: "on"
+        show_empty: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Unavailable devices
+        filter:
+          include:
+            - state: unavailable
+          exclude:
+            - domain: update
+            - domain: tts
+        show_empty: false

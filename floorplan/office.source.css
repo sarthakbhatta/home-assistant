@@ -1,0 +1,91 @@
+svg {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+}
+.title {
+  fill: #EDEEF2; font-size: 17px; font-weight: 800; letter-spacing: 6px;
+}
+.subtitle {
+  fill: #5A5E68; font-size: 11px; letter-spacing: 2px;
+}
+.room {
+  fill: rgba(255,255,255,0.045);
+  stroke: rgba(255,255,255,0.10);
+  stroke-width: 1;
+  transition: fill 0.3s;
+}
+.room.outdoor { stroke-dasharray: 5 4; }
+.label { fill: #8B8F99; font-size: 12px; font-weight: 700; letter-spacing: 3px; }
+.tiny { fill: #6A6F79; font-size: 9px; font-weight: 600; letter-spacing: 1.5px; }
+#office-temp { fill: #EDEEF2; font-size: 32px; font-weight: 300; }
+
+/* ---- lights ---- */
+g[id^="light."] { cursor: pointer; }
+.halo { opacity: 0; transition: opacity 0.7s ease; pointer-events: none; }
+.ring { fill: none; stroke: rgba(255,255,255,0.18); stroke-width: 1.5; transition: stroke 0.4s; }
+.bulb { fill: rgba(255,255,255,0.22); transition: fill 0.4s, filter 0.4s; }
+.light-on .halo { opacity: 1; }
+.light-on .ring { stroke: rgba(255,226,176,0.9); }
+.light-on .bulb { fill: #FFE9C4; filter: drop-shadow(0 0 6px rgba(255,214,150,0.9)); }
+g[id^="light."]:hover .ring { stroke: #E8A33D; }
+
+/* ---- LED strip ---- */
+.striprect { fill: rgba(255,255,255,0.10); transition: fill 0.5s; }
+.stripglow { opacity: 0; transition: opacity 0.6s; }
+.light-on .striprect { fill: url(#stripG); }
+.light-on .stripglow { opacity: 0.9; filter: blur(6px); }
+
+/* ---- AC ---- */
+g[id^="climate."] { cursor: pointer; }
+.acunit { fill: rgba(255,255,255,0.10); stroke: rgba(255,255,255,0.18); transition: all 0.5s; }
+.fanring { stroke: rgba(255,255,255,0.2); stroke-width: 1.5; transition: stroke 0.5s; }
+.fanblade { fill: rgba(255,255,255,0.35); transition: fill 0.5s; }
+.fan { transform-box: fill-box; transform-origin: center; }
+.ac-on .fan { animation: fp-spin 1.4s linear infinite; }
+.ac-on .fanblade { fill: #9FD8EC; }
+.ac-on .fanring { stroke: rgba(111,195,221,0.8); }
+.ac-on .acunit { stroke: rgba(111,195,221,0.7); filter: drop-shadow(0 0 7px rgba(111,195,221,0.6)); }
+@keyframes fp-spin { to { transform: rotate(360deg); } }
+
+/* ---- workstation plug ---- */
+g[id^="switch."] { cursor: pointer; }
+.desk { fill: rgba(255,255,255,0.05); stroke: rgba(255,255,255,0.14); transition: stroke 0.5s; }
+.bolt { fill: rgba(255,255,255,0.28); transition: fill 0.4s, filter 0.4s; }
+.plug-on .bolt { fill: #5CB884; filter: drop-shadow(0 0 7px rgba(92,184,132,0.9)); }
+.plug-on .desk { stroke: rgba(92,184,132,0.55); }
+
+/* ---- borewell pump ---- */
+.pump { fill: none; stroke: rgba(255,255,255,0.3); stroke-width: 2; transition: stroke 0.4s; }
+.pumpring { fill: none; stroke: rgba(255,255,255,0.14); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; }
+.pump-on .pump { stroke: #E8A33D; filter: drop-shadow(0 0 8px rgba(232,163,61,0.9)); }
+.pump-on .pumpring { stroke: rgba(232,163,61,0.7); animation: fp-pulse 1.5s ease-in-out infinite; }
+@keyframes fp-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.4; }
+}
+
+/* ---- terrace door ---- */
+.doorleaf {
+  stroke: #8B8F99; stroke-width: 3.5; stroke-linecap: round;
+  transform-box: fill-box; transform-origin: top center;
+  transition: transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1), stroke 0.5s;
+}
+.doorarc { fill: none; stroke: rgba(255,255,255,0.08); stroke-dasharray: 3 4; opacity: 0; transition: opacity 0.5s; }
+.hinge { fill: #8B8F99; }
+.door-open .doorleaf { transform: rotate(-74deg); stroke: #E5484D; filter: drop-shadow(0 0 6px rgba(229,72,77,0.8)); }
+.door-open .doorarc { opacity: 1; }
+
+/* ---- motion ---- */
+.mcore { fill: rgba(255,255,255,0.3); transition: fill 0.4s; }
+.ripple { fill: none; stroke: #E8A33D; stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.motion-on .mcore { fill: #E8A33D; }
+.motion-on .ripple { animation: fp-rip 1.8s ease-out infinite; }
+.motion-on .ripple.r2 { animation-delay: 0.6s; }
+@keyframes fp-rip {
+  0% { opacity: 0.85; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+
+/* ---- garden valves ---- */
+g[id^="valve."] { cursor: pointer; }
+.drop { fill: rgba(255,255,255,0.18); transition: fill 0.4s, filter 0.4s; }
+.valve-open .drop { fill: #6FC3DD; filter: drop-shadow(0 0 7px rgba(111,195,221,0.9)); }

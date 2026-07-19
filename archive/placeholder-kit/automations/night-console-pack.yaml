@@ -1,0 +1,421 @@
+# ============================================================================
+# NIGHT CONSOLE — automation pack (13 automations, modern 2024.10+ syntax)
+# ----------------------------------------------------------------------------
+# Two ways to install:
+#   A) Per-automation (recommended): Settings → Automations & scenes →
+#      + Create automation → Create new → ⋮ → "Edit in YAML" → paste ONE block
+#      WITHOUT its leading "- " dash → Save. Repeat.
+#   B) File mode: append this whole list to <config>/automations.yaml, then
+#      Developer Tools → YAML → reload Automations.
+#
+# Placeholders: see ENTITIES.md. Helpers you must create first (Settings →
+# Devices & services → Helpers → + Create helper → Toggle):
+#   input_boolean.night_mode      "Night mode"
+# Optional (for #12): a map zone named "Near home" (~2 km radius) →
+#   Settings → Areas, labels & zones → Zones.
+# ============================================================================
+
+# ---------------------------------------------------------------- starter five
+- id: nc_sunset_ambience
+  alias: "NC · Sunset ambience"
+  description: Warm lamps fade in as the sun drops below 2.5°.
+  triggers:
+    - trigger: numeric_state
+      entity_id: sun.sun
+      attribute: elevation
+      below: 2.5
+  conditions:
+    - condition: numeric_state
+      entity_id: zone.home
+      above: 0
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id:
+          - light.living_room_lamp
+          - light.bedroom_bedside
+      data:
+        brightness_pct: 45
+        kelvin: 2400
+        transition: 60
+  mode: single
+
+- id: nc_welcome_home
+  alias: "NC · Welcome home"
+  description: First person home after sunset gets light in the hallway and music resumes.
+  triggers:
+    - trigger: numeric_state
+      entity_id: zone.home
+      above: 0
+  conditions:
+    - condition: state
+      entity_id: sun.sun
+      state: below_horizon
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.hallway
+      data:
+        brightness_pct: 70
+        kelvin: 2700
+    - action: media_player.media_play
+      target:
+        entity_id: media_player.speakers
+      continue_on_error: true
+  mode: single
+
+- id: nc_empty_house_sweep
+  alias: "NC · Empty-house sweep"
+  description: Last person out — lights off, climate eco, and a note if anything was left open.
+  triggers:
+    - trigger: numeric_state
+      entity_id: zone.home
+      below: 1
+      for: "00:05:00"
+  variables:
+    open_things: >-
+      {{ expand('binary_sensor.front_door',
+                'binary_sensor.living_room_window',
+                'binary_sensor.bedroom_window')
+         | selectattr('state','eq','on') | map(attribute='name') | list }}
+  actions:
+    - action: light.turn_off
+      target:
+        entity_id: all
+    - action: climate.set_preset_mode
+      target:
+        entity_id:
+          - climate.living_room_ac
+          - climate.bedroom_ac
+      data:
+        preset_mode: eco
+      continue_on_error: true   # remove if your AC has no eco preset; use climate.turn_off instead
+    - if:
+        - condition: template
+          value_template: "{{ open_things | count > 0 }}"
+      then:
+        - action: notify.mobile_app_sarthak_phone
+          data:
+            title: "House is empty"
+            message: "Left open: {{ open_things | join(', ') }}"
+  mode: single
+
+- id: nc_goodnight
+  alias: "NC · Goodnight"
+  description: 23:30 (or your bedside button) — fade everything out, arm night mode, charge nag.
+  triggers:
+    - trigger: time
+      at: "23:30:00"
+    # - trigger: state                      # uncomment if you have a bedside button
+    #   entity_id: event.bedside_button
+    #   not_to: unavailable
+  actions:
+    - action: light.turn_off
+      target:
+        entity_id: all
+      data:
+        transition: 30
+    - action: media_player.turn_off
+      target:
+        entity_id: all
+      continue_on_error: true
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.night_mode
+    - if:
+        - condition: numeric_state
+          entity_id: sensor.sarthak_phone_battery_level
+          below: 30
+        - condition: state
+          entity_id: binary_sensor.sarthak_phone_is_charging
+          state: "off"
+      then:
+        - action: notify.mobile_app_sarthak_phone
+          data:
+            message: >-
+              Phone at {{ states('sensor.sarthak_phone_battery_level') }}% —
+              plug it in before you sleep.
+  mode: single
+
+- id: nc_morning_briefing
+  alias: "NC · Morning briefing"
+  description: Workday mornings — gentle light fade-in and a weather + calendar brief.
+  triggers:
+    - trigger: time
+      at: "07:00:00"   # or replace with sensor.sarthak_phone_next_alarm
+  conditions:
+    - condition: time
+      weekday: [mon, tue, wed, thu, fri]
+    - condition: numeric_state
+      entity_id: zone.home
+      above: 0
+  actions:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.night_mode
+    - action: light.turn_on
+      target:
+        entity_id: light.bedroom_bedside
+      data:
+        brightness_pct: 30
+        kelvin: 3000
+        transition: 120
+    - action: notify.mobile_app_sarthak_phone
+      data:
+        title: "Good morning"
+        message: >-
+          {{ states('weather.home') | replace('-', ' ') }},
+          {{ state_attr('weather.home','temperature') }}° now.
+          {% set ev = state_attr('calendar.personal','message') %}
+          {% if ev %}First up: {{ ev }} at
+          {{ as_timestamp(state_attr('calendar.personal','start_time')) | timestamp_custom('%H:%M') }}.
+          {% else %}Nothing on the calendar.{% endif %}
+  mode: single
+
+# --------------------------------------------------------- light & presence
+- id: nc_midnight_path
+  alias: "NC · Midnight path"
+  description: Motion at night gives 10% warm light, never full brightness.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.hallway_motion
+      to: "on"
+  conditions:
+    - condition: time
+      after: "23:00:00"
+      before: "07:00:00"
+    - condition: state
+      entity_id: light.hallway
+      state: "off"
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.hallway
+      data:
+        brightness_pct: 10
+        kelvin: 2200
+    - wait_for_trigger:
+        - trigger: state
+          entity_id: binary_sensor.hallway_motion
+          to: "off"
+          for: "00:03:00"
+      timeout: "00:20:00"
+    - action: light.turn_off
+      target:
+        entity_id: light.hallway
+      data:
+        transition: 10
+  mode: restart
+
+# Circadian lighting is an integration, not an automation:
+# HACS → Integrations → "Adaptive Lighting" → install → Settings → Devices &
+# services → Add integration → Adaptive Lighting → select your color-temp
+# lights. It then manages warmth/brightness all day with zero YAML.
+
+- id: nc_cinema_mode
+  alias: "NC · Cinema mode"
+  description: Play dims the living room to 15%; pause lifts it to 40%.
+  triggers:
+    - trigger: state
+      entity_id: media_player.living_room_tv
+      to: playing
+      id: play
+    - trigger: state
+      entity_id: media_player.living_room_tv
+      from: playing
+      to: paused
+      id: pause
+  conditions:
+    - condition: state
+      entity_id: sun.sun
+      state: below_horizon
+  actions:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: play
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.living_room_ceiling
+              data:
+                brightness_pct: 15
+                transition: 3
+        - conditions:
+            - condition: trigger
+              id: pause
+          sequence:
+            - action: light.turn_on
+              target:
+                entity_id: light.living_room_ceiling
+              data:
+                brightness_pct: 40
+                transition: 1
+  mode: restart
+
+# --------------------------------------------------------- climate & comfort
+- id: nc_window_vs_climate
+  alias: "NC · Window vs climate"
+  description: Open window pauses that room's AC; closing resumes it.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.living_room_window
+      to: "on"
+      for: "00:01:00"
+      id: opened
+    - trigger: state
+      entity_id: binary_sensor.living_room_window
+      to: "off"
+      for: "00:00:30"
+      id: closed
+  actions:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: opened
+          sequence:
+            - action: climate.turn_off
+              target:
+                entity_id: climate.living_room_ac
+        - conditions:
+            - condition: trigger
+              id: closed
+          sequence:
+            - action: climate.turn_on
+              target:
+                entity_id: climate.living_room_ac
+  mode: restart
+
+- id: nc_shower_fog_control
+  alias: "NC · Shower fog control"
+  description: Humidity spike runs the extractor fan until things settle.
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.bathroom_humidity
+      above: 70
+  actions:
+    - action: homeassistant.turn_on   # domain-agnostic: works for fan.* or switch.*
+      target:
+        entity_id: fan.bathroom_extractor
+    - wait_for_trigger:
+        - trigger: numeric_state
+          entity_id: sensor.bathroom_humidity
+          below: 60
+      timeout: "00:45:00"
+    - action: homeassistant.turn_off
+      target:
+        entity_id: fan.bathroom_extractor
+  mode: single
+  max_exceeded: silent
+
+- id: nc_preconditioned_arrival
+  alias: "NC · Pre-conditioned arrival"
+  description: Entering the "Near home" zone on a hot afternoon starts the AC.
+  triggers:
+    - trigger: zone
+      entity_id: person.sarthak
+      zone: zone.near_home
+      event: enter
+  conditions:
+    - condition: numeric_state
+      entity_id: weather.home
+      attribute: temperature
+      above: 28
+    - condition: numeric_state
+      entity_id: zone.home
+      below: 1
+  actions:
+    - action: climate.set_temperature
+      target:
+        entity_id: climate.living_room_ac
+      data:
+        temperature: 24
+        hvac_mode: cool
+  mode: single
+
+# ------------------------------------------------------ security & peace of mind
+- id: nc_door_ajar_nag
+  alias: "NC · Door-ajar nag"
+  description: Front door open >5 min — nags every 5 min, up to 3 times, until closed.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.front_door
+      to: "on"
+      for: "00:05:00"
+  actions:
+    - repeat:
+        count: 3
+        sequence:
+          - action: notify.mobile_app_sarthak_phone
+            data:
+              title: "Front door"
+              message: >-
+                Open for
+                {{ relative_time(states.binary_sensor.front_door.last_changed) }}.
+          - wait_for_trigger:
+              - trigger: state
+                entity_id: binary_sensor.front_door
+                to: "off"
+            timeout: "00:05:00"
+          - if:
+              - condition: state
+                entity_id: binary_sensor.front_door
+                state: "off"
+            then:
+              - stop: "Door closed."
+  mode: restart
+
+- id: nc_night_watch
+  alias: "NC · Night watch"
+  description: Motion or door while night mode is armed — lights up and alerts loudly.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.front_door
+      to: "on"
+    - trigger: state
+      entity_id: binary_sensor.hallway_motion
+      to: "on"
+  conditions:
+    - condition: state
+      entity_id: input_boolean.night_mode
+      state: "on"
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.hallway
+      data:
+        brightness_pct: 100
+    - action: notify.mobile_app_sarthak_phone
+      data:
+        title: "Night watch"
+        message: "{{ trigger.to_state.name }} at {{ now().strftime('%H:%M') }}."
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+  mode: single
+  max_exceeded: silent
+
+- id: nc_leak_alarm
+  alias: "NC · Leak alarm"
+  description: Water where it shouldn't be — critical alert that punches through silent mode.
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.kitchen_leak
+      to: "on"
+  actions:
+    - action: notify.mobile_app_sarthak_phone
+      data:
+        title: "💧 LEAK DETECTED"
+        message: "{{ trigger.to_state.name }} is wet. Check it now."
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1.0
+    # - action: siren.turn_on          # uncomment if you have a siren
+    #   target: { entity_id: siren.alarm }
+  mode: single

@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+  <defs>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFE2B0" stop-opacity="0.95"/>
+      <stop offset="45%" stop-color="#E8A33D" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#E8A33D" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="stripG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FF7A3D"/>
+      <stop offset="55%" stop-color="#E8A33D"/>
+      <stop offset="100%" stop-color="#FFD9A0"/>
+    </linearGradient>
+    <radialGradient id="ambA" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E8A33D" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#E8A33D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="ambC" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#40B4DC" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#40B4DC" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="0" y="0" width="900" height="560" fill="#0B0D12"/>
+  <ellipse cx="140" cy="60" rx="420" ry="240" fill="url(#ambA)"/>
+  <ellipse cx="820" cy="520" rx="420" ry="260" fill="url(#ambC)"/>
+
+  <text x="50" y="38" class="title">FIRST FLOOR</text>
+  <text x="850" y="38" text-anchor="end" class="subtitle">sarthak.local</text>
+
+  <!-- ============ OFFICE ============ -->
+  <rect x="50" y="60" width="420" height="300" rx="14" class="room"/>
+  <text x="70" y="90" class="label">OFFICE</text>
+
+  <g id="light.office_downlight_1">
+    <circle class="halo" cx="170" cy="160" r="52" fill="url(#halo)"/>
+    <circle class="ring" cx="170" cy="160" r="11"/>
+    <circle class="bulb" cx="170" cy="160" r="6"/>
+  </g>
+  <g id="light.office_downlight_2">
+    <circle class="halo" cx="350" cy="160" r="52" fill="url(#halo)"/>
+    <circle class="ring" cx="350" cy="160" r="11"/>
+    <circle class="bulb" cx="350" cy="160" r="6"/>
+  </g>
+  <g id="light.smart_light_strip1">
+    <rect class="stripglow" x="70" y="336" width="380" height="8" rx="4" fill="url(#stripG)"/>
+    <rect class="striprect" x="70" y="338" width="380" height="5" rx="2.5"/>
+  </g>
+
+  <g id="switch.office_main_desk">
+    <rect class="desk" x="90" y="250" width="130" height="52" rx="9"/>
+    <path class="bolt" d="M158 258 L146 278 L154 278 L148 294 L164 272 L155 272 Z"/>
+    <text x="155" y="316" text-anchor="middle" class="tiny">WORKSTATION</text>
+  </g>
+
+  <g id="climate.panasonic_ac_panasonic_ac">
+    <rect class="acunit" x="368" y="64" width="84" height="15" rx="6"/>
+    <g class="fan">
+      <circle cx="410" cy="104" r="12" fill="none" class="fanring"/>
+      <path class="fanblade" d="M410 94 C414 98 414 102 410 104 C406 102 406 98 410 94 Z"/>
+      <path class="fanblade" d="M401 109 C406 107 409 109 410 104 C407 101 403 103 401 109 Z"/>
+      <path class="fanblade" d="M419 109 C417 103 413 101 410 104 C411 109 414 107 419 109 Z"/>
+    </g>
+  </g>
+
+  <text id="office-temp" x="265" y="230" text-anchor="middle">--°</text>
+  <text x="265" y="252" text-anchor="middle" class="tiny">INSIDE</text>
+
+  <!-- ============ BATHROOM ============ -->
+  <rect x="490" y="60" width="160" height="130" rx="14" class="room"/>
+  <text x="510" y="90" class="label">BATH</text>
+  <g id="light.office_bathroom_downlight">
+    <circle class="halo" cx="570" cy="130" r="38" fill="url(#halo)"/>
+    <circle class="ring" cx="570" cy="130" r="9"/>
+    <circle class="bulb" cx="570" cy="130" r="5"/>
+  </g>
+
+  <!-- ============ TERRACE ============ -->
+  <rect x="670" y="60" width="180" height="300" rx="14" class="room outdoor"/>
+  <text x="690" y="90" class="label">TERRACE</text>
+
+  <g id="binary_sensor.terrace_door_sensor_door">
+    <path class="doorarc" d="M672 232 A58 58 0 0 1 730 290"/>
+    <line class="doorleaf" x1="672" y1="232" x2="672" y2="292"/>
+    <circle class="hinge" cx="672" cy="232" r="3.5"/>
+  </g>
+
+  <g id="binary_sensor.motion_sensor_motion">
+    <circle class="ripple r1" cx="765" cy="170" r="16"/>
+    <circle class="ripple r2" cx="765" cy="170" r="16"/>
+    <circle class="mcore" cx="765" cy="170" r="5"/>
+    <text x="765" y="205" text-anchor="middle" class="tiny">MOTION</text>
+  </g>
+
+  <!-- ============ STAIRCASE ============ -->
+  <rect x="50" y="400" width="600" height="110" rx="14" class="room"/>
+  <text x="70" y="430" class="label">STAIRCASE</text>
+  <g id="light.st1">
+    <circle class="halo" cx="150" cy="465" r="34" fill="url(#halo)"/>
+    <circle class="ring" cx="150" cy="465" r="8"/>
+    <circle class="bulb" cx="150" cy="465" r="4.5"/>
+  </g>
+  <g id="light.st2">
+    <circle class="halo" cx="330" cy="465" r="34" fill="url(#halo)"/>
+    <circle class="ring" cx="330" cy="465" r="8"/>
+    <circle class="bulb" cx="330" cy="465" r="4.5"/>
+  </g>
+  <g id="light.st3">
+    <circle class="halo" cx="510" cy="465" r="34" fill="url(#halo)"/>
+    <circle class="ring" cx="510" cy="465" r="8"/>
+    <circle class="bulb" cx="510" cy="465" r="4.5"/>
+  </g>
+  <g id="switch.borewell_motor">
+    <circle class="pumpring" cx="600" cy="465" r="14"/>
+    <path class="pump" d="M593 465 a7 7 0 1 1 14 0 a7 7 0 1 1 -14 0 M600 452 L600 458 M600 472 L600 478"/>
+    <text x="600" y="497" text-anchor="middle" class="tiny">PUMP</text>
+  </g>
+
+  <!-- ============ GARDEN ============ -->
+  <rect x="670" y="400" width="180" height="110" rx="14" class="room outdoor"/>
+  <text x="690" y="430" class="label">GARDEN</text>
+  <g id="valve.tuya_automated_watering_valve_1">
+    <path class="drop" d="M730 450 C736 460 738 466 730 472 C722 466 724 460 730 450 Z"/>
+    <text x="730" y="492" text-anchor="middle" class="tiny">V1</text>
+  </g>
+  <g id="valve.tuya_automated_watering_valve_2">
+    <path class="drop" d="M790 450 C796 460 798 466 790 472 C782 466 784 460 790 450 Z"/>
+    <text x="790" y="492" text-anchor="middle" class="tiny">V2</text>
+  </g>
+</svg>
