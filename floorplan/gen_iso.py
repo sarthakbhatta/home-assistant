@@ -58,7 +58,7 @@ class Room:
         self.add(x + y - 0.01, '<polygon%s%s points="%s" fill="%s"/>' % (
             ' id="%s"' % eid if eid else '', ' class="%s"' % cls if cls else '', pts(p), color))
 
-    def pool(self, cx, cy, r, cls, eid, sort=None, z_top=None):
+    def pool(self, cx, cy, r, cls, eid, sort=None, z_top=None, apex=None):
         """Ground light pool, optionally with a visible beam down from the ceiling.
 
         Wrapped in a <g> carrying the entity id so a single class_set lights the
@@ -70,7 +70,11 @@ class Room:
         rx, ry = r * ELL_RX * U, r * ELL_RY * U
         inner = ''
         if z_top is not None:
-            tx, ty = iso(cx, cy, z_top)
+            # apex lets the beam slant: the fixture sits at `apex` while the
+            # pool lands at (cx, cy), so light arrives at an angle rather than
+            # dropping straight down.
+            ax, ay = apex if apex else (cx, cy)
+            tx, ty = iso(ax, ay, z_top)
             inner += ('<path class="beam" d="M%.1f %.1f L%.1f %.1f A%.1f %.1f 0 0 0 %.1f %.1f Z"/>'
                       % (tx, ty, px - rx, py, rx, ry, px + rx, py))
         inner += ('<ellipse class="poolel" cx="%.1f" cy="%.1f" rx="%.1f" ry="%.1f"/>'
@@ -322,15 +326,8 @@ o.box(0.68, 2.08, 0, 0.16, 0.16, 1.5, '#C7CFD7')                   # desk legs
 o.box(2.26, 2.08, 0, 0.16, 0.16, 1.5, '#C7CFD7')
 o.box(0.68, 7.04, 0, 0.16, 0.16, 1.5, '#C7CFD7')
 o.box(2.26, 7.04, 0, 0.16, 0.16, 1.5, '#C7CFD7')
-# office chair: star base + gas post + seat + back + armrest
-o.shadow(3.70, 6.80, 0.72, 0.72, op=0.36)
-o.cyl(3.70, 6.80, 0.0, 0.09, 0.62, '#414A55')                      # star base plate
-o.cyl(3.70, 6.80, 0.09, 0.52, 0.11, '#8C97A3')                     # gas lift post
-o.box(3.05, 6.15, 0.52, 1.30, 1.30, 0.20, '#DCE3E9')               # seat cushion
-o.box(3.05, 6.15, 0.72, 1.30, 1.30, 0.05, '#C3CCD6')               # seat piping
-o.box(3.42, 6.20, 0.77, 0.18, 1.20, 1.15, '#57626F')               # back rest
-o.box(3.42, 6.28, 1.75, 0.18, 1.04, 0.16, '#6C7885')               # head rail
-o.box(3.60, 6.10, 0.86, 0.60, 0.12, 0.10, '#6C7885')               # armrest
+# office chair removed on request -- it sat right where the downlight pools
+# land, and cutting it opens the floor so the light actually reads.
 # workstation tower, under the desk against the wall (planner x=9 -> 0.8)
 o.box(0.80, 5.5, 0, 1.2, 1.4, 1.42, '#5B6674', eid='switch.office_main_desk', cls='plug')
 o.add(9.3, '<polygon class="bolt" id="switch.office_main_desk-bolt" points="%s"/>' % pts([
@@ -402,9 +399,13 @@ o.add(99, '<g class="fan" id="climate.panasonic_ac_panasonic_ac-fan" style="tran
 # LED strip high on the left wall (planner x=10.5 -> 0.25)
 o.box(0.05, 1.5, 4.2, 0.18, 6.4, 0.28, '#FFFFFF', eid='light.smart_light_strip1', cls='strip')
 # ceiling downlights -- planner centres, mirrored
+# Downlights: the fixture stays on the ceiling but the pool is thrown forward
+# and to the right, so the beam slants across the room instead of dropping
+# straight down. Pools widened 2.3 -> 3.3 so the light reads at room scale.
 for i, (lx, ly, ent) in enumerate([(6.75, 4.25, 'light.office_downlight_1'),
                                    (4.75, 4.25, 'light.office_downlight_2')]):
-    o.pool(lx, ly, 2.3, 'pool', ent + '-pool', sort=-50 + i, z_top=4.9)
+    px, py = lx - 1.5, ly + 1.9                     # where the pool lands
+    o.pool(px, py, 3.3, 'pool', ent + '-pool', sort=-50 + i, z_top=4.9, apex=(lx, ly))
     o.dot(lx, ly, 4.9, 6.4, 'fixture', ent, sort=200 + i)
 # bathroom: a LOW partition across the front (planner x=3.5 -> 3.1, y=8).
 # Kept short on purpose -- at full height it stands between you and the room.
