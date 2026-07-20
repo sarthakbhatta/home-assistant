@@ -364,7 +364,9 @@ o = Room('office', 'OFFICE', (190, 195), 11, 9, 5.2, '#2FBFAE', '#5FC9B8')
 # opposite wall and therefore had to become the hidden one; it gets a wall stub.
 # v3 cleanup: monitor, cabinet, plant, printer and rug were deleted on purpose.
 # desk down the left wall (planner x=8.5 -> 0.6)
-o.shadow(1.55, 4.6, 1.35, 2.9, op=0.40)
+# No contact shadow under the desk: at this size it reads as a dark slab lying
+# on the floor rather than a shadow. The smaller ones (lamp, coffee machine)
+# still work because they sit under compact objects.
 o.box(0.6, 2.0, 0, 1.9, 5.2, 1.5, '#F2F5F7')                       # desk top
 o.box(0.68, 2.08, 0, 0.16, 0.16, 1.5, '#C7CFD7')                   # desk legs
 o.box(2.26, 2.08, 0, 0.16, 0.16, 1.5, '#C7CFD7')
@@ -454,8 +456,11 @@ for i, (lx, ly, ent) in enumerate([(6.75, 4.25, 'light.office_downlight_1'),
 # bathroom: a LOW partition across the front (planner x=3.5 -> 3.1, y=8).
 # Kept short on purpose -- at full height it stands between you and the room.
 o.box(3.1, 8.0, 0, 4.4, 0.3, 1.15, '#26A899')
-o.pool(5.35, 8.65, 1.3, 'pool', 'light.office_bathroom_downlight-pool', sort=-40)
-o.dot(5.35, 8.65, 4.9, 3.6, 'fixture', 'light.office_bathroom_downlight', sort=205)
+# bathroom light: a pendant like the other two, and nudged right/forward so it
+# reads as hanging over the bath alcove instead of floating above the desk
+_bathz = o.pendant(6.30, 8.45, 5.2, 'light.office_bathroom_downlight', sort=205)
+o.pool(6.30, 8.45, 2.0, 'pool', 'light.office_bathroom_downlight-pool',
+       sort=-40, z_top=_bathz)
 # temperature, painted ON the AC wall rather than floating in screen space
 # z is bounded: the AC occupies z3.5-4.6 on this wall, so the text lives in the
 # clear band below it. Too high and overlay draws it straight over the unit.
