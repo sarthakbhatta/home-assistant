@@ -214,19 +214,27 @@ class Room:
                  '<g%s%s>%s</g>' % (' id="%s"' % eid if eid else '',
                                     ' class="%s"' % cls if cls else '', s))
 
-    def wall_text(self, y, z, text, cls="metric", eid="", size=None):
-        """Text lying flat ON the near (x=W) wall, not floating in screen space.
+    def wall_text(self, a, z, text, cls="metric", eid="", size=None, wall='right'):
+        """Text lying flat ON a wall rather than floating in screen space.
 
-        The wall's +y direction projects to (-cos30, +sin30) and +z to (0,-1),
-        so skewing the glyphs by that basis makes them sit in the wall plane.
-        Runs along -y so it reads left-to-right on screen.
+        wall='right' is the x=W plane: +y projects to (-cos30, +sin30), so the
+        text runs along -y to read left-to-right, giving matrix(cos30, -sin30).
+        wall='back' is the y=0 plane: +x projects to (+cos30, +sin30), so it
+        runs along +x, giving matrix(cos30, +sin30).
+        Either way +z is straight up, so the second basis vector is (0, 1).
+        `a` is the along-wall coordinate: y for 'right', x for 'back'.
         """
-        tx, ty = iso(self.W + 0.04, y, z)
+        if wall == 'back':
+            tx, ty = iso(a, 0.04, z)
+            mb = SIN30
+        else:
+            tx, ty = iso(self.W + 0.04, a, z)
+            mb = -SIN30
         self.overlay.append(
             '<text%s class="%s"%s transform="matrix(%.4f %.4f 0 1 %.1f %.1f)" x="0" y="0">%s</text>'
             % (' id="%s"' % eid if eid else '', cls,
                ' style="font-size:%dpx"' % size if size else '',
-               COS30, -SIN30, tx, ty, text))
+               COS30, mb, tx, ty, text))
 
     def panel(self, wall, a, b, z0, z1, color, cls="", eid=""):
         """Flat panel set into a visible wall -- doors, windows, wall art.
@@ -528,12 +536,20 @@ for i, (lz, ent) in enumerate([(1.1, 'light.st1'), (2.3, 'light.st2'), (3.5, 'li
     s.box(0.06, 2.2 + i * 1.9, lz, 0.2, 1.1, 0.4, '#FFFFFF', eid=ent, cls='steplight', sort=300 + i)
     px, py = iso(0.3, 2.75 + i * 1.9, lz + 0.2)
     s.add(-40 + i, '<ellipse class="wallpool" id="%s-pool" cx="%.1f" cy="%.1f" rx="34" ry="20"/>' % (ent, px, py))
-# borewell pump
+# borewell pump -- gets a fragment of the cut-away wall behind it, both so the
+# machine reads as standing against something and to carry its live readouts
+s.stub(4.6, 8.8, 4.4, '#E08A38')
+s.shadow(9.35, 7.15, 1.15, 1.15, op=0.38)
 s.box(8.4, 6.2, 0, 1.9, 1.9, 1.5, '#5B6674', eid='switch.borewell_motor', cls='pump')
 _px, _py = iso(9.35, 7.15, 1.5)
 s.add(400, '<g class="pumpring" id="switch.borewell_motor-ring" style="transform-origin:%.1fpx %.1fpx"><circle cx="%.1f" cy="%.1f" r="17"/></g>' % (
     _px, _py, _px, _py))
 s.add(401, '<circle class="pumphub" id="switch.borewell_motor-hub" cx="%.1f" cy="%.1f" r="6"/>' % (_px, _py))
+# live draw + a fault banner, painted onto the pump's wall
+# sized to fit inside the stub: the text runs along -y, so a long string at a
+# large size walks straight off the end of the wall
+s.wall_text(8.6, 2.7, '--', cls='metric wallmetric', eid='stairs-watts', size=20)
+s.wall_text(8.6, 1.7, '', cls='metric wallmetric faultmsg', eid='stairs-fault', size=13)
 ROOMS.append(s)
 
 # ---------------------------------------------------------------- TERRACE
@@ -678,6 +694,14 @@ g[id^="light."]{cursor:pointer}
 .pumpring.pump-on,.pump-on .pumpring{animation:pulse 1.5s ease-in-out infinite}
 .pumphub.pump-on,.pump-on .pumphub{fill:#E8A33D;filter:drop-shadow(0 0 9px rgba(232,163,61,.95))}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.25}}
+/* overheat / overload: the pump goes red and beats faster than its running
+   pulse, so a fault is distinguishable from normal operation at a glance */
+.faultmsg{fill:#FF6B63;letter-spacing:2px}
+.pump.pump-fault .f-t,.pump.pump-fault .f-r,.pump.pump-fault .f-l{fill:#8E2F2A}
+.pumpring.pump-fault circle,.pump-fault .pumpring circle{stroke:#FF4D42}
+.pumpring.pump-fault,.pump-fault .pumpring{animation:pulse .7s ease-in-out infinite}
+.pumphub.pump-fault,.pump-fault .pumphub{fill:#FF4D42;
+  filter:drop-shadow(0 0 11px rgba(255,77,66,.95))}
 
 /* ---------- door ---------- */
 .leaf-closed{fill:#9FB0C0;stroke:rgba(0,0,0,.2);stroke-width:1;transition:opacity .55s}
@@ -850,3 +874,4 @@ def build_room(rm):
 
 emit(build_room(o), 'room-office.svg', 'room-office')
 emit(build_room(b), 'room-bedroom.svg', 'room-bedroom')
+emit(build_room(s), 'room-stairs.svg', 'room-stairs')
