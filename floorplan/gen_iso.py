@@ -388,31 +388,33 @@ o.wedge(0.88, 2.14, 1.60, 0.22, 1.70, 0.95, 1.15, '#2C3440',
 # projection is the HIGH-y one, so the control panel, group head, portafilter
 # and cup all have to live at high y -- built the other way round they end up
 # on the side facing away from the viewer, which is what happened first time.
-o.shadow(7.56, 7.06, 0.85, 0.85, op=0.40)
-BODY, PANEL, DARK, CHROME = '#E08A5C', '#EDA47C', '#7A4630', '#D8DDE1'
-o.add(6.85 + 6.35, '<g id="switch.coffee_machine_switch" class="plug">'
-      + o.raw_box(6.85, 6.35, 0.00, 1.42, 1.42, 0.26, DARK)           # plinth
-      + o.raw_box(6.93, 6.67, 0.26, 1.26, 1.02, 0.07, CHROME)         # drip tray
-      + o.raw_box(6.90, 6.39, 0.26, 1.32, 0.68, 1.44, BODY)           # body column (rear)
-      + o.raw_box(6.85, 6.39, 1.44, 1.42, 1.15, 0.70, PANEL)          # head, overhangs forward
-      + o.raw_box(6.90, 7.50, 1.36, 1.32, 0.10, 0.20, DARK)           # head front lip
-      + o.raw_box(7.28, 7.20, 1.10, 0.34, 0.30, 0.28, '#2B2320')      # group head
-      + o.raw_box(7.34, 7.46, 1.16, 0.20, 0.26, 0.14, '#7A4630')      # portafilter handle
+# Repainted to match the animated machine in the pop-up (dark graphite, chrome
+# tray, white cup) and moved into the front-right corner against the AC wall.
+o.shadow(9.86, 7.16, 0.85, 0.85, op=0.40)
+BODY, PANEL, DARK, CHROME = '#39414A', '#4E5862', '#1A1F24', '#C9D0D6'
+o.add(9.15 + 6.45, '<g id="switch.coffee_machine_switch" class="plug">'
+      + o.raw_box(9.15, 6.45, 0.00, 1.42, 1.42, 0.26, DARK)           # plinth
+      + o.raw_box(9.23, 6.77, 0.26, 1.26, 1.02, 0.07, CHROME)         # drip tray
+      + o.raw_box(9.20, 6.49, 0.26, 1.32, 0.68, 1.44, BODY)           # body column (rear)
+      + o.raw_box(9.15, 6.49, 1.44, 1.42, 1.15, 0.70, PANEL)          # head, overhangs forward
+      + o.raw_box(9.20, 7.60, 1.36, 1.32, 0.10, 0.20, DARK)           # head front lip
+      + o.raw_box(9.58, 7.30, 1.10, 0.34, 0.30, 0.28, '#12161A')      # group head
+      + o.raw_box(9.64, 7.56, 1.16, 0.20, 0.26, 0.14, '#2A3138')      # portafilter handle
       + '</g>')
 # control panel on the head's forward face -- layered toward the viewer, so
 # each element sits at a slightly HIGHER y than the one behind it
-o.face_circle(7.35, 7.55, 1.86, 0.20, '#2B2320')                      # gauge bezel
-o.face_circle(7.35, 7.56, 1.86, 0.13, '#E8B48F')                      # gauge face
-o.face_circle(7.35, 7.57, 1.86, 0.05, '#2B2320')                      # needle hub
-for _bx, _bz in ((7.66, 1.94), (7.66, 1.74), (7.04, 1.94), (7.04, 1.74)):
-    _px, _py = iso(_bx, 7.56, _bz)
-    o.add(_bx + 7.56 + _bz * 0.5 + 0.02,
+o.face_circle(9.65, 7.65, 1.86, 0.20, '#12161A')                      # gauge bezel
+o.face_circle(9.65, 7.66, 1.86, 0.13, '#8E979F')                      # gauge face
+o.face_circle(9.65, 7.67, 1.86, 0.05, '#12161A')                      # needle hub
+for _bx, _bz in ((9.96, 1.94), (9.96, 1.74), (9.34, 1.94), (9.34, 1.74)):
+    _px, _py = iso(_bx, 7.66, _bz)
+    o.add(_bx + 7.66 + _bz * 0.5 + 0.02,
           '<g transform="matrix(%.4f %.4f 0 1 %.1f %.1f)">'
-          '<rect x="-3.4" y="-2.0" width="6.8" height="4.0" rx="2" fill="#D8DDE1"/></g>'
+          '<rect x="-3.4" y="-2.0" width="6.8" height="4.0" rx="2" fill="#C9D0D6"/></g>'
           % (COS30, SIN30, _px, _py))
-o.cyl(8.34, 7.17, 1.62, 1.78, 0.17, CHROME)                           # side knob
-o.cyl(7.45, 7.35, 0.33, 0.72, 0.22, '#241E1B')                        # cup under the spout
-o.cyl(7.45, 7.35, 0.70, 0.73, 0.19, '#4A342A')                        # coffee surface
+o.cyl(10.64, 7.27, 1.62, 1.78, 0.17, CHROME)                          # side knob
+o.cyl(9.75, 7.45, 0.33, 0.74, 0.22, '#F2F4F5')                        # white cup
+o.cyl(9.75, 7.45, 0.72, 0.75, 0.19, '#3B2417')                        # coffee surface
 # standing bar lamp = switch.office_office_meeting_light (planner x=9 -> 0.5).
 # A switch, not a light: it can glow but it cannot dim.
 o.shadow(1.25, 7.75, 0.66, 0.66, op=0.42)
