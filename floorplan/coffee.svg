@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="cm-root" viewBox="0 0 700 520" preserveAspectRatio="xMidYMid meet">
+<style>
+/* Two independent state classes, set by two separate ha-floorplan rules:
+     .machine-on  -> on #cm-root,  from switch.coffee_machine_switch
+     .brewing     -> on #cm-brew,  from the power sensor crossing a threshold
+   They live on different elements on purpose. floorplan.class_set REPLACES the
+   whole class attribute, so two rules writing to one element would fight.
+   Both are ancestors of everything they style, so descendant selectors work.
+   NB: never put angle brackets in this stylesheet -- it sits inside a style
+   element and the XML parser reads them as real tags. */
+#cm-root{width:100%;height:auto}
+.status-light{fill:#39413d;transition:fill .35s ease}
+.machine-on .status-light{fill:#20df67;filter:url(#greenGlow)}
+/* Three stacked labels rather than one driven by text_set. The screen depends
+   on BOTH entities, and a single class_set/text_set rule only sees the entity
+   that triggered it -- so let CSS combine the two state classes instead.
+   Order matters here: the .brewing overrides must come after the .machine-on
+   ones, since both have the same specificity. */
+.scr{font-size:12px;font-family:Arial,Helvetica,sans-serif;text-anchor:middle;
+  transition:opacity .3s ease}
+.scr-off{fill:#758087;opacity:1}
+.scr-standby{fill:#65f18f;opacity:0}
+.scr-brew{fill:#65f18f;opacity:0}
+.machine-on .scr-off{opacity:0}
+.machine-on .scr-standby{opacity:1}
+.brewing .scr-standby{opacity:0}
+.brewing .scr-brew{opacity:1}
+.watts{fill:#7d8790;font-size:11px;font-family:Arial,Helvetica,sans-serif;
+  text-anchor:middle;opacity:0;transition:opacity .3s ease}
+.machine-on .watts{opacity:.9}
+
+.coffee-stream,.steam{opacity:0}
+.coffee-surface{opacity:.25;transition:opacity 2.5s ease}
+.coffee-ripple{opacity:0;transform-origin:343px 366px}
+.steam path{fill:none;stroke:#fff;stroke-width:8;stroke-linecap:round;opacity:0;filter:url(#steamBlur)}
+
+.brewing .coffee-stream{opacity:1;animation:coffeeFlow .8s ease-in-out infinite}
+.brewing .coffee-ripple{animation:ripple 1.4s ease-out infinite}
+.brewing .coffee-surface{opacity:1}
+.brewing .steam{opacity:1}
+.brewing .steam-1{animation:steamRise 2.7s ease-in-out infinite}
+.brewing .steam-2{animation:steamRise 3s ease-in-out .5s infinite}
+.brewing .steam-3{animation:steamRise 2.8s ease-in-out 1s infinite}
+
+@keyframes coffeeFlow{0%,100%{stroke-width:8;opacity:.75}50%{stroke-width:12;opacity:1}}
+@keyframes ripple{0%{opacity:.7;transform:scale(.3)}100%{opacity:0;transform:scale(2.5)}}
+@keyframes steamRise{0%{opacity:0;transform:translateY(25px) scale(.8)}25%{opacity:.7}100%{opacity:0;transform:translateY(-60px) scale(1.2)}}
+@media (prefers-reduced-motion:reduce){
+  .brewing .coffee-stream,.brewing .coffee-ripple,.brewing .steam path{animation:none}
+}
+</style>
+<defs>
+<linearGradient id="cmBackground" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f8f9fa"/><stop offset="100%" stop-color="#dfe3e6"/></linearGradient>
+<linearGradient id="machineFront" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#646d75"/><stop offset="55%" stop-color="#272d32"/><stop offset="100%" stop-color="#111519"/></linearGradient>
+<linearGradient id="machineSide" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#20262b"/><stop offset="100%" stop-color="#080b0e"/></linearGradient>
+<linearGradient id="metal" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#555d63"/><stop offset="35%" stop-color="#e5e9eb"/><stop offset="70%" stop-color="#8e969c"/><stop offset="100%" stop-color="#343a3f"/></linearGradient>
+<linearGradient id="coffeeGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#2a1207"/><stop offset="50%" stop-color="#9a5427"/><stop offset="100%" stop-color="#301507"/></linearGradient>
+<radialGradient id="coffeeSurface"><stop offset="0%" stop-color="#c67a3b"/><stop offset="55%" stop-color="#743719"/><stop offset="100%" stop-color="#241006"/></radialGradient>
+<filter id="greenGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="steamBlur" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4"/></filter>
+<filter id="cmShadow" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#000" flood-opacity="0.3"/></filter>
+</defs>
+<g id="cm-brew">
+<rect x="10" y="10" width="680" height="490" rx="32" fill="url(#cmBackground)"/>
+<ellipse cx="350" cy="475" rx="230" ry="25" fill="#000" opacity="0.14"/>
+<g filter="url(#cmShadow)" transform="translate(0,-32)">
+<path d="M160 80 H510 L570 118 V360 L510 395 H160 Z" fill="url(#machineSide)"/>
+<path d="M160 80 H510 V360 L160 395 Z" fill="url(#machineFront)"/>
+<path d="M510 80 L570 118 V360 L510 360 Z" fill="#0a0d10"/>
+<path d="M160 80 H510 L570 118 H220 Z" fill="#727b82" opacity="0.75"/>
+<rect x="195" y="130" width="285" height="100" rx="18" fill="#090c0e" stroke="#717980" stroke-width="3"/>
+<rect x="217" y="151" width="174" height="58" rx="10" fill="#151c20"/>
+<text x="304" y="178" text-anchor="middle" fill="#c6d0d5" font-size="16" font-family="Arial,Helvetica,sans-serif">ESPRESSO</text>
+<text class="scr scr-off" x="304" y="200">OFF</text>
+<text class="scr scr-standby" x="304" y="200">STANDBY</text>
+<text class="scr scr-brew" x="304" y="200">BREWING</text>
+<text id="cm-watts" class="watts" x="440" y="215">--</text>
+<circle cx="440" cy="180" r="23" fill="#101518" stroke="#7d878d" stroke-width="4"/>
+<circle class="status-light" cx="440" cy="180" r="13"/>
+<path d="M240 250 H445 L465 278 H220 Z" fill="#090c0e"/>
+<rect x="295" y="268" width="95" height="30" rx="8" fill="url(#metal)"/>
+<rect x="316" y="291" width="53" height="35" rx="5" fill="#252c31"/>
+<rect x="329" y="322" width="27" height="34" rx="7" fill="url(#metal)"/>
+<rect x="335" y="350" width="15" height="16" rx="4" fill="#101417"/>
+<path d="M195 350 H480 L515 374 H235 Z" fill="#798188"/>
+<path d="M235 374 H515 V393 H235 Z" fill="#292f34"/>
+<g stroke="#171b1e" stroke-width="5" opacity="0.6">
+<line x1="270" y1="361" x2="490" y2="361"/><line x1="292" y1="351" x2="292" y2="372"/><line x1="334" y1="351" x2="334" y2="372"/><line x1="376" y1="351" x2="376" y2="372"/><line x1="418" y1="351" x2="418" y2="372"/><line x1="460" y1="351" x2="460" y2="372"/>
+</g>
+</g>
+<path class="coffee-stream" d="M342 326 C342 352 343 374 343 394" fill="none" stroke="url(#coffeeGrad)" stroke-width="10" stroke-linecap="round"/>
+<g transform="translate(0,12)">
+<path d="M275 364 H425 L412 463 Q409 484 390 486 H311 Q292 484 289 463 Z" fill="#f4f5f5" stroke="#9ba3a8" stroke-width="4"/>
+<path d="M422 392 C476 382 482 458 416 456" fill="none" stroke="#b9c0c3" stroke-width="18"/>
+<path d="M423 404 C457 399 458 443 418 444" fill="none" stroke="#edf0f1" stroke-width="9"/>
+<ellipse cx="350" cy="366" rx="76" ry="18" fill="#d9dee0" stroke="#969fa4" stroke-width="3"/>
+<ellipse class="coffee-surface" cx="350" cy="368" rx="65" ry="12" fill="url(#coffeeSurface)"/>
+<ellipse class="coffee-ripple" cx="343" cy="366" rx="20" ry="5" fill="none" stroke="#e0b183" stroke-width="3"/>
+<path d="M295 426 Q350 447 408 426" fill="none" stroke="#fff" stroke-width="7" opacity="0.45"/>
+</g>
+<g class="steam" transform="translate(0,12)">
+<path class="steam-1" d="M315 358 C286 319 334 300 309 260 C289 230 318 213 326 194"/>
+<path class="steam-2" d="M350 358 C376 319 333 300 360 258 C382 227 358 206 355 184"/>
+<path class="steam-3" d="M385 358 C416 322 378 302 401 270 C425 238 411 219 405 202"/>
+</g>
+</g>
+</svg>
