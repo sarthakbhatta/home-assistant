@@ -88,6 +88,50 @@ class Room:
                  '<circle%s class="%s" cx="%.1f" cy="%.1f" r="%.1f"/>' % (
                      ' id="%s"' % eid if eid else '', cls, px, py, r))
 
+    def cone(self, cx, cy, z0, z1, r0, r1, color):
+        """Truncated cone as a bare string -- r0 at z0, r1 at z1. Lampshades.
+
+        Same construction as cyl() but with the two ellipses at different radii,
+        so the body is a trapezoid rather than a rectangle.
+        """
+        bx, by = iso(cx, cy, z0)
+        tx, ty = iso(cx, cy, z1)
+        rx0, ry0 = r0 * ELL_RX * U, r0 * ELL_RY * U
+        rx1, ry1 = r1 * ELL_RX * U, r1 * ELL_RY * U
+        return ('<ellipse cx="%.1f" cy="%.1f" rx="%.1f" ry="%.1f" fill="%s"/>'
+                % (bx, by, rx0, ry0, shade(color, F_LEFT))
+                + '<polygon points="%.1f,%.1f %.1f,%.1f %.1f,%.1f %.1f,%.1f" fill="%s"/>'
+                % (bx - rx0, by, bx + rx0, by, tx + rx1, ty, tx - rx1, ty,
+                   shade(color, F_RIGHT))
+                + '<ellipse cx="%.1f" cy="%.1f" rx="%.1f" ry="%.1f" fill="%s"/>'
+                % (tx, ty, rx1, ry1, shade(color, F_TOP)))
+
+    def pendant(self, cx, cy, ceil_z, eid, drop=1.3, shade_r=0.52, color='#5D6874',
+                sort=None):
+        """Hanging pendant lamp: cord from the ceiling, conical shade, bulb.
+
+        A flat dot on the ceiling reads as a smudge and gives no sense of a
+        fixture hanging in the room. Grouped under the entity id with the class
+        base `fixture`, so the existing class_set rules light it unchanged.
+
+        Returns the bulb's z so the beam can start there rather than at the
+        ceiling -- light should leave the lamp, not the slab above it.
+        """
+        z_top = ceil_z - drop                       # where the shade meets the cord
+        z_bot = z_top - 0.62                        # shade mouth
+        z_bulb = z_bot - 0.14
+        cx0, cy0 = iso(cx, cy, ceil_z)
+        cx1, cy1 = iso(cx, cy, z_top)
+        bx, by = iso(cx, cy, z_bulb)
+        g = ('<g id="%s" class="fixture">' % eid
+             + '<line class="cord" x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f"/>'
+             % (cx0, cy0, cx1, cy1)
+             + '<g class="shade">%s</g>' % self.cone(cx, cy, z_bot, z_top, shade_r, 0.10, color)
+             + '<circle class="bulb" cx="%.1f" cy="%.1f" r="5.6"/>' % (bx, by)
+             + '</g>')
+        self.add(sort if sort is not None else (cx + cy + z_bulb * 0.5), g)
+        return z_bulb
+
     def face_circle(self, x, y, z, r, fill, stroke="", sw=0.0):
         """Circle lying in a constant-y plane (a front panel), not screen-flat.
 
@@ -399,14 +443,12 @@ o.add(99, '<g class="fan" id="climate.panasonic_ac_panasonic_ac-fan" style="tran
 # LED strip high on the left wall (planner x=10.5 -> 0.25)
 o.box(0.05, 1.5, 4.2, 0.18, 6.4, 0.28, '#FFFFFF', eid='light.smart_light_strip1', cls='strip')
 # ceiling downlights -- planner centres, mirrored
-# Downlights: the fixture stays on the ceiling but the pool is thrown forward
-# and to the right, so the beam slants across the room instead of dropping
-# straight down. Pools widened 2.3 -> 3.3 so the light reads at room scale.
+# Downlights hang as pendants so the fixture itself is visible in the room.
+# Beams drop straight down from the bulb -- no slant.
 for i, (lx, ly, ent) in enumerate([(6.75, 4.25, 'light.office_downlight_1'),
                                    (4.75, 4.25, 'light.office_downlight_2')]):
-    px, py = lx - 1.5, ly + 1.9                     # where the pool lands
-    o.pool(px, py, 3.3, 'pool', ent + '-pool', sort=-50 + i, z_top=4.9, apex=(lx, ly))
-    o.dot(lx, ly, 4.9, 6.4, 'fixture', ent, sort=200 + i)
+    z_bulb = o.pendant(lx, ly, 5.2, ent, sort=200 + i)
+    o.pool(lx, ly, 3.0, 'pool', ent + '-pool', sort=-50 + i, z_top=z_bulb)
 # bathroom: a LOW partition across the front (planner x=3.5 -> 3.1, y=8).
 # Kept short on purpose -- at full height it stands between you and the room.
 o.box(3.1, 8.0, 0, 4.4, 0.3, 1.15, '#26A899')
@@ -570,12 +612,22 @@ g[id^="room-"]:hover rect{fill:rgba(30,40,54,.94);stroke:rgba(255,255,255,.42)}
 .wallpool{fill:url(#poolg);opacity:0;filter:blur(5px);transition:opacity .55s ease}
 /* Off-state fixtures must still be findable -- they are the tap targets.
    A visible ring plus a brighter core beats a faint dot. */
-.fixture{fill:rgba(255,255,255,.55);stroke:rgba(255,255,255,.34);stroke-width:1.4;
-  transition:fill .4s,filter .4s,stroke .4s}
+/* Two shapes share this class: a bare circle element in most rooms, and a
+   pendant group (cord + shade + bulb) in the office. Both selectors stay
+   listed so neither form loses its styling.
+   NB: never put angle brackets in this CSS -- it lives inside a style element
+   and the XML parser reads them as real tags. */
+circle.fixture,.fixture .bulb{fill:rgba(255,255,255,.55);stroke:rgba(255,255,255,.34);
+  stroke-width:1.4;transition:fill .4s,filter .4s,stroke .4s}
 .light-on .pool,.pool.light-on{opacity:1}
 .light-on .wallpool,.wallpool.light-on{opacity:1}
-.light-on.fixture,.fixture.light-on{fill:#FFF6DF;stroke:rgba(255,226,160,.95);
-  filter:drop-shadow(0 0 16px rgba(255,206,120,1))}
+circle.fixture.light-on,.fixture.light-on .bulb{fill:#FFF6DF;
+  stroke:rgba(255,226,160,.95);filter:drop-shadow(0 0 16px rgba(255,206,120,1))}
+/* pendant hardware */
+.cord{stroke:#7C8792;stroke-width:1.8}
+.shade ellipse,.shade polygon{transition:fill .45s,filter .45s}
+.fixture.light-on .shade ellipse,.fixture.light-on .shade polygon{
+  fill:#FFDFA4;filter:drop-shadow(0 0 10px rgba(255,201,120,.75))}
 g[id^="light."]{cursor:pointer}
 
 /* LED strip */
