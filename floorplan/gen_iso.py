@@ -481,8 +481,11 @@ b.add(151, '<g id="light.master_bedroom_led_inner" class="ring"><ellipse cx="%.1
 for i, (lx, ly, ent) in enumerate([
         (2.6, 2.4, 'light.bedroom_downlight_1'), (7.8, 2.4, 'light.wiz_tunable_white_cdad76'),
         (2.6, 6.6, 'light.wiz_tunable_white_cdadae'), (7.8, 6.6, 'light.wiz_tunable_white_9cde0f')]):
-    b.pool(lx, ly, 1.9, 'pool', ent + '-pool', sort=-50 + i)
-    b.dot(lx, ly, 4.9, 4.0, 'fixture', ent, sort=200 + i)
+    # beams + bigger fixtures for the same reason as the office: a bare pool
+    # gives no clue where the tap target is. Kept as flush ceiling lights
+    # rather than pendants -- the office pendants match real hanging lamps there.
+    b.pool(lx, ly, 2.1, 'pool', ent + '-pool', sort=-50 + i, z_top=4.9)
+    b.dot(lx, ly, 4.9, 6.0, 'fixture', ent, sort=200 + i)
 plant(b, 9.3, 3.6, s=1.0)
 ROOMS.append(b)
 
@@ -839,3 +842,4 @@ def build_room(rm):
 
 
 emit(build_room(o), 'room-office.svg', 'room-office')
+emit(build_room(b), 'room-bedroom.svg', 'room-bedroom')
