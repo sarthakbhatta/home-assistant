@@ -1,0 +1,196 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="sl-root" viewBox="0 0 1200 720"
+     preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="sltitle sldesc">
+  <title id="sltitle">Staircase pendant lights</title>
+  <desc id="sldesc">Three brass pendant globe lights, each lit according to its Home Assistant entity.</desc>
+
+  <defs>
+    <linearGradient id="slwall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b9b5b8"/>
+      <stop offset=".46" stop-color="#9b969a"/>
+      <stop offset=".47" stop-color="#292a31"/>
+      <stop offset="1" stop-color="#17181d"/>
+    </linearGradient>
+
+    <linearGradient id="slbrass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6e5120"/>
+      <stop offset=".18" stop-color="#c9a85d"/>
+      <stop offset=".48" stop-color="#f5df91"/>
+      <stop offset=".72" stop-color="#aa7b31"/>
+      <stop offset="1" stop-color="#5c421d"/>
+    </linearGradient>
+
+    <radialGradient id="slbrassTop" cx=".42" cy=".34" r=".72">
+      <stop offset="0" stop-color="#f4dc85"/>
+      <stop offset=".36" stop-color="#b88b3e"/>
+      <stop offset=".78" stop-color="#745222"/>
+      <stop offset="1" stop-color="#3e2d16"/>
+    </radialGradient>
+
+    <radialGradient id="slglobe" cx=".40" cy=".32" r=".76">
+      <stop offset="0" stop-color="#fffdf0"/>
+      <stop offset=".48" stop-color="#fff9cf"/>
+      <stop offset=".78" stop-color="#f4e6a8"/>
+      <stop offset="1" stop-color="#cabd82"/>
+    </radialGradient>
+
+    <!-- unlit globe: cold, slightly translucent glass rather than warm filament -->
+    <radialGradient id="slglobeOff" cx=".40" cy=".32" r=".76">
+      <stop offset="0" stop-color="#8f949c"/>
+      <stop offset=".52" stop-color="#6d727a"/>
+      <stop offset="1" stop-color="#464b53"/>
+    </radialGradient>
+
+    <radialGradient id="slglobeHighlight" cx=".34" cy=".28" r=".65">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".88"/>
+      <stop offset=".45" stop-color="#fffde8" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="slhalo" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff4af" stop-opacity=".55"/>
+      <stop offset=".36" stop-color="#ffdf72" stop-opacity=".25"/>
+      <stop offset="1" stop-color="#ffd75b" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="slcord" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#65451e"/>
+      <stop offset=".35" stop-color="#c4974b"/>
+      <stop offset=".7" stop-color="#815a28"/>
+      <stop offset="1" stop-color="#4f3619"/>
+    </linearGradient>
+
+    <pattern id="slflutes" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect width="12" height="12" fill="#18191e"/>
+      <rect width="3" height="12" fill="#25262c"/>
+      <rect x="5" width="2" height="12" fill="#0f1014"/>
+    </pattern>
+
+    <filter id="slshadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="14" dy="12" stdDeviation="10" flood-color="#000" flood-opacity=".48"/>
+    </filter>
+
+    <filter id="slglow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+
+    <filter id="slsoft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+
+    <clipPath id="slribClip">
+      <rect x="610" y="286" width="570" height="260" rx="2"/>
+    </clipPath>
+
+    <style>
+      /* State comes from ha-floorplan via floorplan.class_set on the OUTER
+         group (id="light.stN"). class_set replaces the whole class attribute,
+         so the sway animation lives on an inner group that is never touched.
+         NB: never put angle brackets in this stylesheet -- it sits inside a
+         style element and the XML parser reads them as real tags. */
+      #sl-root { width: 100%; height: auto; }
+      .lamp { cursor: pointer; }
+
+      .pendant { transform-box: fill-box; transform-origin: 50% 0%; }
+      .p1 { animation: slsway1 5.4s ease-in-out infinite; }
+      .p2 { animation: slsway2 6.2s ease-in-out infinite .35s; }
+      .p3 { animation: slsway3 5.8s ease-in-out infinite .7s; }
+
+      /* default is OFF: dark glass, no halo */
+      .halo { opacity: 0; transform-box: fill-box; transform-origin: center;
+              transition: opacity .5s ease; }
+      .globe-core { fill: url(#slglobeOff); stroke: #767c85;
+                    transition: fill .5s ease, stroke .5s ease; }
+      .shine { opacity: .14; transition: opacity .5s ease; }
+      .cap { fill: #7d838c; transition: fill .45s ease; }
+
+      /* lit */
+      .lamp-on .halo { opacity: .62; animation: slbreathe 3.4s ease-in-out infinite; }
+      .lamp-on .globe-core { fill: url(#slglobe); stroke: #d4c691;
+                             animation: sllampPulse 3.4s ease-in-out infinite; }
+      .lamp-on .shine { opacity: .42; animation: slshineMove 4.2s ease-in-out infinite; }
+      .lamp-on .cap { fill: #FFE9BC; }
+
+      /* unavailable: greyed and stopped, so it cannot be mistaken for off */
+      .lamp-na { opacity: .38; }
+      .lamp-na .pendant { animation: none; }
+
+      .cap { font: 600 22px system-ui, -apple-system, "Segoe UI", sans-serif;
+             text-anchor: middle; letter-spacing: 3px; }
+
+      @keyframes slsway1 { 0%,100% { transform: rotate(-1.1deg); } 50% { transform: rotate(1.1deg); } }
+      @keyframes slsway2 { 0%,100% { transform: rotate(.8deg); }   50% { transform: rotate(-.8deg); } }
+      @keyframes slsway3 { 0%,100% { transform: rotate(-.7deg); }  50% { transform: rotate(.95deg); } }
+      @keyframes slbreathe { 0%,100% { opacity: .62; transform: scale(.96); } 50% { opacity: .95; transform: scale(1.05); } }
+      @keyframes sllampPulse { 0%,100% { opacity: .94; } 50% { opacity: 1; } }
+      @keyframes slshineMove { 0%,100% { opacity: .42; transform: translate(-3px,-2px); } 50% { opacity: .78; transform: translate(4px,3px); } }
+
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+    </style>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#slwall)"/>
+  <rect x="0" y="283" width="610" height="267" fill="#1e1f25"/>
+  <rect x="610" y="286" width="570" height="260" fill="url(#slflutes)" clip-path="url(#slribClip)"/>
+  <rect x="0" y="545" width="1200" height="175" fill="#17181c"/>
+  <rect x="0" y="543" width="1200" height="4" fill="#9a7e4b" opacity=".55"/>
+
+  <g id="light.st1" class="lamp">
+    <g class="pendant p1">
+      <ellipse cx="300" cy="125" rx="57" ry="20" fill="#000" opacity=".24" filter="url(#slsoft)"/>
+      <g filter="url(#slshadow)">
+        <ellipse cx="300" cy="112" rx="48" ry="17" fill="url(#slbrassTop)"/>
+        <rect x="263" y="110" width="74" height="17" rx="8" fill="url(#slbrass)"/>
+        <ellipse cx="300" cy="127" rx="37" ry="8" fill="#5f441f"/>
+      </g>
+      <rect x="294" y="124" width="12" height="296" rx="6" fill="url(#slcord)"/>
+      <g transform="translate(300 0)">
+        <rect x="-15" y="401" width="30" height="77" rx="6" fill="url(#slbrass)" filter="url(#slshadow)"/>
+        <rect x="-22" y="472" width="44" height="23" rx="7" fill="url(#slbrass)"/>
+        <ellipse class="halo" cx="0" cy="545" rx="115" ry="115" fill="url(#slhalo)" filter="url(#slglow)"/>
+        <circle class="globe-core" cx="0" cy="545" r="75" stroke-width="3" filter="url(#slshadow)"/>
+        <circle class="shine" cx="-18" cy="525" r="51" fill="url(#slglobeHighlight)"/>
+      </g>
+    </g>
+    <text class="cap" x="300" y="678">STEP 1</text>
+  </g>
+
+  <g id="light.st2" class="lamp">
+    <g class="pendant p2">
+      <ellipse cx="620" cy="121" rx="57" ry="20" fill="#000" opacity=".24" filter="url(#slsoft)"/>
+      <g filter="url(#slshadow)">
+        <ellipse cx="620" cy="108" rx="48" ry="17" fill="url(#slbrassTop)"/>
+        <rect x="583" y="106" width="74" height="17" rx="8" fill="url(#slbrass)"/>
+        <ellipse cx="620" cy="123" rx="37" ry="8" fill="#5f441f"/>
+      </g>
+      <rect x="614" y="120" width="12" height="300" rx="6" fill="url(#slcord)"/>
+      <g transform="translate(620 0)">
+        <rect x="-15" y="401" width="30" height="77" rx="6" fill="url(#slbrass)" filter="url(#slshadow)"/>
+        <rect x="-22" y="472" width="44" height="23" rx="7" fill="url(#slbrass)"/>
+        <ellipse class="halo" cx="0" cy="545" rx="115" ry="115" fill="url(#slhalo)" filter="url(#slglow)" style="animation-delay:.35s"/>
+        <circle class="globe-core" cx="0" cy="545" r="75" stroke-width="3" filter="url(#slshadow)" style="animation-delay:.35s"/>
+        <circle class="shine" cx="-18" cy="525" r="51" fill="url(#slglobeHighlight)" style="animation-delay:.35s"/>
+      </g>
+    </g>
+    <text class="cap" x="620" y="678">STEP 2</text>
+  </g>
+
+  <g id="light.st3" class="lamp">
+    <g class="pendant p3">
+      <ellipse cx="940" cy="121" rx="57" ry="20" fill="#000" opacity=".24" filter="url(#slsoft)"/>
+      <g filter="url(#slshadow)">
+        <ellipse cx="940" cy="108" rx="48" ry="17" fill="url(#slbrassTop)"/>
+        <rect x="903" y="106" width="74" height="17" rx="8" fill="url(#slbrass)"/>
+        <ellipse cx="940" cy="123" rx="37" ry="8" fill="#5f441f"/>
+      </g>
+      <rect x="934" y="120" width="12" height="300" rx="6" fill="url(#slcord)"/>
+      <g transform="translate(940 0)">
+        <rect x="-15" y="401" width="30" height="77" rx="6" fill="url(#slbrass)" filter="url(#slshadow)"/>
+        <rect x="-22" y="472" width="44" height="23" rx="7" fill="url(#slbrass)"/>
+        <ellipse class="halo" cx="0" cy="545" rx="115" ry="115" fill="url(#slhalo)" filter="url(#slglow)" style="animation-delay:.7s"/>
+        <circle class="globe-core" cx="0" cy="545" r="75" stroke-width="3" filter="url(#slshadow)" style="animation-delay:.7s"/>
+        <circle class="shine" cx="-18" cy="525" r="51" fill="url(#slglobeHighlight)" style="animation-delay:.7s"/>
+      </g>
+    </g>
+    <text class="cap" x="940" y="678">STEP 3</text>
+  </g>
+</svg>
