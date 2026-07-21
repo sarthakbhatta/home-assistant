@@ -840,8 +840,13 @@ def room_bbox(rm, pad=20, bottom_extra=50):
     return minx, miny, maxx - minx, maxy - miny
 
 
-def build_room(rm):
-    """One room, alone, framed to fill the screen."""
+def build_room(rm, extra=None):
+    """One room, alone, framed to fill the screen.
+
+    `extra` adds a second pill beside CONTROLS as (element_id, label). Rooms
+    with a detail pop-up need it: the pop-up is otherwise only reachable by
+    double-tapping the artwork, which nothing on screen advertises.
+    """
     saved = rm.pos
     rm.pos = (0.0, 0.0)                      # render in local coordinates
     try:
@@ -858,14 +863,26 @@ def build_room(rm):
                  % (vx + vw / 2.0, vy + 30, rm.name))
         p.append(rm.render())
         # drawer handle -- the room's own affordance for the controls tray
-        hx, hy = vx + vw / 2.0, vy + vh - 28
+        cy_ = vy + vh - 28
+        w1 = 168.0
+        w2 = (26 + len(extra[1]) * 11.0) if extra else 0.0
+        gap = 14.0 if extra else 0.0
+        left = vx + vw / 2.0 - (w1 + gap + w2) / 2.0
+        hx = left + w1 / 2.0                     # centre of the CONTROLS pill
         p.append('<g id="drawer-handle" class="handle">'
-                 '<rect x="%.1f" y="%.1f" width="168" height="36" rx="18"/>'
+                 '<rect x="%.1f" y="%.1f" width="%.1f" height="36" rx="18"/>'
                  '<text x="%.1f" y="%.1f">CONTROLS</text>'
                  '<path class="chev" d="M%.1f %.1f l5 5 l5 -5"/>'
                  '</g>'
-                 % (hx - 84, hy - 18, hx - 8, hy + 5,
-                    hx + 52, hy - 2))
+                 % (left, cy_ - 18, w1, hx - 8, cy_ + 5,
+                    hx + 52, cy_ - 2))
+        if extra:
+            ex = left + w1 + gap
+            p.append('<g id="%s" class="handle">'
+                     '<rect x="%.1f" y="%.1f" width="%.1f" height="36" rx="18"/>'
+                     '<text x="%.1f" y="%.1f">%s</text>'
+                     '</g>'
+                     % (extra[0], ex, cy_ - 18, w2, ex + w2 / 2.0, cy_ + 5, extra[1]))
         p.append('</svg>')
         return "".join(p)
     finally:
@@ -874,4 +891,4 @@ def build_room(rm):
 
 emit(build_room(o), 'room-office.svg', 'room-office')
 emit(build_room(b), 'room-bedroom.svg', 'room-bedroom')
-emit(build_room(s), 'room-stairs.svg', 'room-stairs')
+emit(build_room(s, extra=('lights-button', 'LIGHTS')), 'room-stairs.svg', 'room-stairs')
